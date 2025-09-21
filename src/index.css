@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Community Platform Design System - All colors MUST be HSL */
+
+@layer base {
+  :root {
+    /* Dark theme primary colors */
+    --background: 220 13% 8%;
+    --foreground: 210 40% 98%;
+    
+    /* Card and surface colors */
+    --card: 224 12% 12%;
+    --card-foreground: 210 40% 98%;
+    --card-hover: 224 12% 16%;
+    
+    /* Primary brand colors - Purple/Blue gradient theme */
+    --primary: 255 85% 65%;
+    --primary-hover: 255 85% 70%;
+    --primary-foreground: 220 13% 8%;
+    
+    /* Secondary accent colors */
+    --secondary: 224 12% 18%;
+    --secondary-hover: 224 12% 22%;
+    --secondary-foreground: 210 40% 98%;
+    
+    /* Muted colors for subtle elements */
+    --muted: 224 12% 15%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    /* Accent colors for highlights */
+    --accent: 265 85% 55%;
+    --accent-hover: 265 85% 60%;
+    --accent-foreground: 210 40% 98%;
+    
+    /* Voting colors */
+    --upvote: 142 76% 55%;
+    --upvote-hover: 142 76% 60%;
+    --downvote: 348 83% 60%;
+    --downvote-hover: 348 83% 65%;
+    
+    /* Status colors */
+    --success: 142 76% 55%;
+    --warning: 48 96% 53%;
+    --destructive: 348 83% 60%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* Border and input colors */
+    --border: 224 12% 20%;
+    --input: 224 12% 18%;
+    --input-focus: 255 85% 65%;
+    --ring: 255 85% 65%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(255, 85%, 65%) 0%, hsl(265, 85%, 55%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(265, 85%, 55%) 0%, hsl(275, 85%, 45%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(220, 13%, 8%) 0%, hsl(224, 12%, 12%) 50%, hsl(255, 85%, 65%) 100%);
+    
+    /* Shadows */
+    --shadow-card: 0 4px 12px hsl(220 13% 4% / 0.3);
+    --shadow-card-hover: 0 8px 24px hsl(220 13% 4% / 0.4);
+    --shadow-primary: 0 4px 12px hsl(255 85% 65% / 0.3);
+    
+    /* Layout */
+    --radius: 0.75rem;
+    --max-width: 1200px;
+  }
+}
+
+/* Animation keyframes */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(255 85% 65% / 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px hsl(255 85% 65% / 0);
+  }
+}
+
+@keyframes vote-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
