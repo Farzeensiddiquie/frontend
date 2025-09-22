@@ -6,16 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, MessageSquare, Mail, Lock } from "lucide-react";
-import { authAPI, User } from "@/lib/api";
-import { setStoredAuth } from "@/lib/auth";
+import { useDispatch } from "react-redux";
+import { setAuth } from "@/store/authSlice";
+import { authAPI } from "@/lib/api";
 import { toast } from "sonner";
 
-interface LoginProps {
-  onLogin: (user: User, token: string) => void;
-}
-
-const Login = ({ onLogin }: LoginProps) => {
-  const navigate = useNavigate();
+const Login = () => {
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -39,8 +36,7 @@ const Login = ({ onLogin }: LoginProps) => {
 
     try {
       const response = await authAPI.login(formData);
-      setStoredAuth(response.user, response.token);
-      onLogin(response.user, response.token);
+      dispatch(setAuth({ user: response.user, token: response.accessToken }));
       toast.success("Welcome back!");
       navigate("/feed");
     } catch (error) {

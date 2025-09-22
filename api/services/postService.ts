@@ -1,6 +1,6 @@
-import { httpClient } from '../utils/httpClient';
-import { AuthUtils } from '../utils/auth';
-import { API_ENDPOINTS } from '../config';
+import { httpClient } from '../utils/httpClient.js';
+import { AuthUtils } from '../utils/auth.js';
+import { API_ENDPOINTS } from '../config.js';
 import { 
   Post, 
   CreatePostData, 
@@ -8,11 +8,11 @@ import {
   PostFilters, 
   ApiResponse, 
   PaginatedResponse 
-} from '../types';
+} from '../types.js';
 
 export class PostService {
-  // Get all posts with filters
-  static async getAllPosts(filters: PostFilters = {}): Promise<PaginatedResponse<Post>> {
+  // Get all posts (return just the posts array)
+  static async getAllPosts(filters: PostFilters = {}): Promise<Post[]> {
     const params = new URLSearchParams();
     
     if (filters.page) params.append('page', filters.page.toString());
@@ -22,10 +22,12 @@ export class PostService {
     if (filters.sortBy) params.append('sortBy', filters.sortBy);
 
     const queryString = params.toString();
-    const endpoint = queryString ? `${API_ENDPOINTS.POSTS.ALL}?${queryString}` : API_ENDPOINTS.POSTS.ALL;
+    const endpoint = queryString 
+      ? `${API_ENDPOINTS.POSTS.ALL}?${queryString}` 
+      : API_ENDPOINTS.POSTS.ALL;
 
-    const response = await httpClient.get<PaginatedResponse<Post>>(endpoint);
-    return response.data;
+    const response = await httpClient.get<Post[]>(endpoint);
+    return response.data; // Backend returns posts directly
   }
 
   // Get post by ID
@@ -36,16 +38,13 @@ export class PostService {
     return response.data;
   }
 
-  // Get posts by user ID
-  static async getUserPosts(userId: string, page: number = 1): Promise<PaginatedResponse<Post>> {
-    const params = new URLSearchParams({
-      page: page.toString(),
-    });
-
-    const response = await httpClient.get<PaginatedResponse<Post>>(
+  // Get posts by user ID (return just posts array)
+  static async getUserPosts(userId: string, page: number = 1): Promise<Post[]> {
+    const params = new URLSearchParams({ page: page.toString() });
+    const response = await httpClient.get<Post[]>(
       `${API_ENDPOINTS.POSTS.BY_USER(userId)}?${params}`
     );
-    return response.data;
+    return response.data; // Backend returns posts directly
   }
 
   // Create new post
@@ -59,12 +58,12 @@ export class PostService {
       formData.append('image', postData.image);
     }
 
-    const response = await httpClient.post<Post>(
+    const response = await httpClient.post<{ message: string; post: Post }>(
       API_ENDPOINTS.POSTS.ALL,
       formData,
       AuthUtils.getAuthHeaders()
     );
-    return response.data;
+    return response.data.post;
   }
 
   // Update post
@@ -76,12 +75,12 @@ export class PostService {
     if (postData.tags) formData.append('tags', JSON.stringify(postData.tags));
     if (postData.image) formData.append('image', postData.image);
 
-    const response = await httpClient.put<Post>(
+    const response = await httpClient.put<{ message: string; post: Post }>(
       API_ENDPOINTS.POSTS.BY_ID(postId),
       formData,
       AuthUtils.getAuthHeaders()
     );
-    return response.data;
+    return response.data.post;
   }
 
   // Delete post
@@ -94,25 +93,27 @@ export class PostService {
 
   // Like/Unlike post
   static async toggleLike(postId: string): Promise<Post> {
-    const response = await httpClient.post<Post>(
+    const response = await httpClient.post<{ message: string; likes: string[] }>(
       API_ENDPOINTS.POSTS.LIKE(postId),
       {},
       AuthUtils.getAuthHeaders()
     );
-    return response.data;
+    // Return the post with updated likes - we'll need to refetch the post
+    return PostService.getPostById(postId);
   }
 
   // Vote on post (upvote/downvote)
   static async votePost(postId: string, voteType: 'up' | 'down'): Promise<Post> {
-    const response = await httpClient.post<Post>(
+    const response = await httpClient.post<{ message: string; votes: number }>(
       API_ENDPOINTS.POSTS.VOTE(postId),
-      { voteType },
+      { type: voteType },
       AuthUtils.getAuthHeaders()
     );
-    return response.data;
+    // Return the post with updated votes - we'll need to refetch the post
+    return PostService.getPostById(postId);
   }
 
-  // Get trending posts
+  // Get trending posts (just posts array)
   static async getTrendingPosts(limit: number = 10): Promise<Post[]> {
     const params = new URLSearchParams({
       trending: 'true',
@@ -122,17 +123,17 @@ export class PostService {
     const response = await httpClient.get<Post[]>(
       `${API_ENDPOINTS.POSTS.ALL}?${params}`
     );
-    return response.data;
+    return response.data; // Backend returns posts directly
   }
 
-  // Get posts by tag
-  static async getPostsByTag(tag: string, page: number = 1): Promise<PaginatedResponse<Post>> {
+  // Get posts by tag (just posts array)
+  static async getPostsByTag(tag: string, page: number = 1): Promise<Post[]> {
     const params = new URLSearchParams({
       tag,
       page: page.toString(),
     });
 
-    const response = await httpClient.get<PaginatedResponse<Post>>(
+    const response = await httpClient.get<Post[]>(
       `${API_ENDPOINTS.POSTS.ALL}?${params}`
     );
     return response.data;
@@ -146,8 +147,8 @@ export class PostService {
     return response.data;
   }
 
-  // Search posts
-  static async searchPosts(query: string, page: number = 1): Promise<PaginatedResponse<Post>> {
+  // Search posts (just posts array)
+  static async searchPosts(query: string, page: number = 1): Promise<Post[]> {
     return this.getAllPosts({ search: query, page });
   }
 }

@@ -1,6 +1,6 @@
-import { httpClient } from '../utils/httpClient';
-import { API_ENDPOINTS } from '../config';
-import { LeaderboardEntry, ApiResponse } from '../types';
+import { httpClient } from '../utils/httpClient.js';
+import { API_ENDPOINTS } from '../config.js';
+import { LeaderboardEntry, ApiResponse } from '../types.js';
 
 export class LeaderboardService {
   // Get leaderboard

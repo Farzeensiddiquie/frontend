@@ -1,7 +1,7 @@
 // API Configuration
 // Note: This will be overridden by the environment config in src/config/env.ts
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:8000/api',
+  BASE_URL: '/api', // Use relative path for Vite proxy
   TIMEOUT: 10000, // 10 seconds
   RETRY_ATTEMPTS: 3,
 };
@@ -21,7 +21,10 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `/users/${id}`,
     UPDATE_AVATAR: '/users/profile/avatar',
     UPDATE_PROFILE: '/users/profile',
+    ALL: '/users'
   },
+  
+
   
   // Post endpoints
   POSTS: {

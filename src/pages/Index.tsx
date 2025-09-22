@@ -8,19 +8,17 @@ import { useQuery } from "@tanstack/react-query";
 import { postsAPI, statsAPI } from "@/lib/api";
 
 const Index = () => {
-  const { data: postsData, isLoading, error } = useQuery({
+  const { data: postsData, isLoading } = useQuery({
     queryKey: ['posts', 1],
     queryFn: () => postsAPI.getAllPosts(1),
-    retry: false, // Don't retry on error to avoid multiple failed requests
   });
 
-  const { data: statsData, isLoading: statsLoading, error: statsError } = useQuery({
+  const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['stats'],
     queryFn: () => statsAPI.getStats(),
-    retry: false, // Don't retry on error to avoid multiple failed requests
   });
 
-  const featuredPosts = Array.isArray(postsData?.posts) ? postsData.posts.slice(0, 3) : [];
+  const featuredPosts = postsData?.posts?.slice(0, 3) || [];
 
   return (
     <div className="min-h-screen">
@@ -148,20 +146,6 @@ const Index = () => {
                 </Card>
               ))}
             </div>
-          ) : error ? (
-            <Card className="p-12 text-center bg-card border-border">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">Unable to load posts</h3>
-              <p className="text-muted-foreground mb-4">
-                There was an error loading the latest posts. Please try again later.
-              </p>
-              <Button 
-                onClick={() => window.location.reload()} 
-                className="bg-gradient-primary hover:opacity-90"
-              >
-                Retry
-              </Button>
-            </Card>
           ) : (
             <div className="grid gap-6">
               {featuredPosts.map((post, index) => (

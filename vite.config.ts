@@ -9,17 +9,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
     proxy: {
-      '/api/users': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/api/posts': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/api/comments': {
+      '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
@@ -33,27 +23,20 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Production optimizations
-    minify: 'terser',
+    outDir: 'dist',
     sourcemap: mode === 'development',
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
           router: ['react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          query: ['@tanstack/react-query'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-toast'],
         },
       },
     },
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: mode === 'production',
-      },
-    },
   },
-  define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+  preview: {
+    port: 8080,
+    host: "::",
   },
 }));

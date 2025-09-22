@@ -19,18 +19,14 @@ import {
   MessageSquare 
 } from "lucide-react";
 import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { selectAuth } from "@/store/authSlice";
+import { clearAuth } from "@/store/authSlice";
 
-interface NavbarProps {
-  user?: {
-    id: string;
-    username: string;
-    avatar?: string;
-  } | null;
-  onLogout: () => void;
-}
-
-export const Navbar = ({ user, onLogout }: NavbarProps) => {
+export const Navbar = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user, isAuthenticated } = useSelector(selectAuth);
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
@@ -96,7 +92,7 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
 
           {/* Right section */}
           <div className="flex items-center gap-3">
-            {user ? (
+            {isAuthenticated && user ? (
               <>
                 <Button 
                   asChild 
@@ -127,7 +123,7 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={onLogout} className="text-destructive">
+                    <DropdownMenuItem onClick={() => dispatch(clearAuth())} className="text-destructive">
                       <LogOut className="h-4 w-4" />
                       Logout
                     </DropdownMenuItem>

@@ -1,15 +1,15 @@
-import { httpClient } from '../utils/httpClient';
-import { AuthUtils } from '../utils/auth';
-import { API_ENDPOINTS } from '../config';
-import { User, UserProfile, ApiResponse, PaginatedResponse } from '../types';
+import { httpClient } from '../utils/httpClient.js';
+import { AuthUtils } from '../utils/auth.js';
+import { API_ENDPOINTS } from '../config.js';
+import { User, PaginatedResponse } from '../types.js';
 
 export class UserService {
   // Get user by ID
   static async getUserById(userId: string): Promise<User> {
-    const response = await httpClient.get<User>(
+    const response = await httpClient.get<{ success: boolean; data: { user: User; stats: any; posts: any[]; comments: any[] } }>(
       API_ENDPOINTS.USERS.BY_ID(userId)
     );
-    return response.data;
+    return response.data.data.user;
   }
 
   // Update user avatar
@@ -17,7 +17,7 @@ export class UserService {
     const formData = new FormData();
     formData.append('avatar', avatarFile);
 
-    const response = await httpClient.put<User>(
+    const response = await httpClient.put<{ success: boolean; data: { user: User } }>(
       API_ENDPOINTS.USERS.UPDATE_AVATAR,
       formData,
       AuthUtils.getAuthHeaders()
@@ -25,20 +25,20 @@ export class UserService {
 
     // Update stored user data
     const currentUser = AuthUtils.getUser();
-    if (currentUser) {
-      const updatedUser = { ...currentUser, ...response.data };
+    if (currentUser && typeof currentUser === 'object') {
+      const updatedUser: User = { ...(currentUser as User), ...response.data.data.user };
       AuthUtils.setUser(updatedUser);
     }
 
-    return response.data;
+    return response.data.data.user;
   }
 
   // Update user profile
   static async updateProfile(profileData: {
-    username?: string;
+    userName?: string;
     bio?: string;
   }): Promise<User> {
-    const response = await httpClient.put<User>(
+    const response = await httpClient.put<{ success: boolean; data: { user: User } }>(
       API_ENDPOINTS.USERS.UPDATE_PROFILE,
       profileData,
       AuthUtils.getAuthHeaders()
@@ -46,12 +46,12 @@ export class UserService {
 
     // Update stored user data
     const currentUser = AuthUtils.getUser();
-    if (currentUser) {
-      const updatedUser = { ...currentUser, ...response.data };
+    if (currentUser && typeof currentUser === 'object') {
+      const updatedUser: User = { ...(currentUser as User), ...response.data.data.user };
       AuthUtils.setUser(updatedUser);
     }
 
-    return response.data;
+    return response.data.data.user;
   }
 
   // Search users
@@ -84,7 +84,7 @@ export class UserService {
     return response.data;
   }
 
-  // Follow/Unfollow user (if this feature exists)
+  // Follow/Unfollow user
   static async toggleFollow(userId: string): Promise<{ isFollowing: boolean }> {
     const response = await httpClient.post<{ isFollowing: boolean }>(
       `${API_ENDPOINTS.USERS.BY_ID(userId)}/follow`,

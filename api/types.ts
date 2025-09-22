@@ -17,7 +17,7 @@ export interface PaginatedResponse<T> {
 // User Types
 export interface User {
   id: string;
-  username: string;
+  userName: string;
   email: string;
   avatar?: string;
   bio?: string;
@@ -38,12 +38,14 @@ export interface Post {
   title: string;
   content: string;
   tags: string[];
-  author: User;
+  creator: User; // Backend uses 'creator' field
+  author?: User; // Keep for backward compatibility
   votes: number;
-  likedBy: string[];
-  upvotes: number;
-  downvotes: number;
-  votedBy: string[];
+  likes: string[]; // Backend uses 'likes' array
+  likedBy?: string[]; // Keep for backward compatibility
+  upvotes?: number;
+  downvotes?: number;
+  votedBy?: string[];
   image?: string;
   createdAt: string;
   updatedAt: string;
@@ -100,7 +102,7 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
-  username: string;
+  userName: string;
   email: string;
   password: string;
   avatar?: File;
@@ -108,7 +110,8 @@ export interface RegisterData {
 
 export interface AuthResponse {
   user: User;
-  token: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 // Search and Filter Types

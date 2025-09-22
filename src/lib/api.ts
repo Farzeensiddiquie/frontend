@@ -1,140 +1,244 @@
-// Re-export everything from the new API structure
-export * from '../../api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
-// Legacy API functions for backward compatibility
-import { 
-  AuthService, 
-  PostService, 
-  CommentService, 
-  UserService, 
-  LeaderboardService,
-  API_CONFIG 
-} from '../../api';
+// Types for API responses
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  avatar?: string;
+  bio?: string;
+  score: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
-// Legacy API functions for backward compatibility
+export interface Post {
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+  author: User;
+  votes: number;
+  likedBy: string[];
+  image?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  author: User;
+  postId: string;
+  votes: number;
+  votedBy: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeaderboardEntry {
+  user: User;
+  rank: number;
+  score: number;
+}
+
+// Auth API functions
 export const authAPI = {
   register: async (formData: FormData): Promise<{ user: User; token: string }> => {
-    // Convert FormData to RegisterData format
-    const userData = {
-      username: formData.get('username') as string,
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-      avatar: formData.get('avatar') as File || undefined,
-    };
-    return AuthService.register(userData);
+    const response = await fetch(`${API_BASE_URL}/users/register`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!response.ok) throw new Error('Registration failed');
+    return response.json();
   },
 
   login: async (credentials: { email: string; password: string }): Promise<{ user: User; token: string }> => {
-    return AuthService.login(credentials);
+    const response = await fetch(`${API_BASE_URL}/users/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    if (!response.ok) throw new Error('Login failed');
+    return response.json();
   },
 
   logout: async (token: string): Promise<void> => {
-    return AuthService.logout();
+    const response = await fetch(`${API_BASE_URL}/users/logout`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Logout failed');
   },
 
   getProfile: async (token: string): Promise<User> => {
-    return AuthService.getProfile();
+    const response = await fetch(`${API_BASE_URL}/users/profile/me`, {
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Failed to get profile');
+    return response.json();
   },
 };
 
 // Posts API functions
 export const postsAPI = {
   getAllPosts: async (page = 1, search = ''): Promise<{ posts: Post[]; total: number }> => {
-    const response = await PostService.getAllPosts({ page, search });
-    return { posts: response.data, total: response.total };
+    const params = new URLSearchParams({ page: page.toString(), search });
+    const response = await fetch(`${API_BASE_URL}/posts?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch posts');
+    return response.json();
   },
 
   getPostById: async (id: string): Promise<Post> => {
-    return PostService.getPostById(id);
+    const response = await fetch(`${API_BASE_URL}/posts/${id}`);
+    if (!response.ok) throw new Error('Failed to fetch post');
+    return response.json();
   },
 
   getUserPosts: async (userId: string): Promise<Post[]> => {
-    const response = await PostService.getUserPosts(userId);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/posts/user/${userId}`);
+    if (!response.ok) throw new Error('Failed to fetch user posts');
+    return response.json();
   },
 
   createPost: async (formData: FormData, token: string): Promise<Post> => {
-    const postData = {
-      title: formData.get('title') as string,
-      content: formData.get('content') as string,
-      tags: JSON.parse(formData.get('tags') as string || '[]'),
-      image: formData.get('image') as File || undefined,
-    };
-    return PostService.createPost(postData);
+    const response = await fetch(`${API_BASE_URL}/posts`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData,
+    });
+    if (!response.ok) throw new Error('Failed to create post');
+    return response.json();
   },
 
   updatePost: async (id: string, formData: FormData, token: string): Promise<Post> => {
-    const postData: Record<string, unknown> = {};
-    if (formData.get('title')) postData.title = formData.get('title') as string;
-    if (formData.get('content')) postData.content = formData.get('content') as string;
-    if (formData.get('tags')) postData.tags = JSON.parse(formData.get('tags') as string);
-    if (formData.get('image')) postData.image = formData.get('image') as File;
-    
-    return PostService.updatePost(id, postData);
+    const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData,
+    });
+    if (!response.ok) throw new Error('Failed to update post');
+    return response.json();
   },
 
   deletePost: async (id: string, token: string): Promise<void> => {
-    return PostService.deletePost(id);
+    const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Failed to delete post');
   },
 
   toggleLike: async (id: string, token: string): Promise<Post> => {
-    return PostService.toggleLike(id);
-  },
-
-  votePost: async (id: string, voteType: 'up' | 'down', token: string): Promise<Post> => {
-    return PostService.votePost(id, voteType);
+    const response = await fetch(`${API_BASE_URL}/posts/${id}/like`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Failed to toggle like');
+    return response.json();
   },
 };
 
 // Comments API functions
 export const commentsAPI = {
   getCommentsByPost: async (postId: string): Promise<Comment[]> => {
-    const response = await CommentService.getCommentsByPost(postId);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/comments/post/${postId}`);
+    if (!response.ok) throw new Error('Failed to fetch comments');
+    return response.json();
   },
 
   getUserComments: async (userId: string): Promise<Comment[]> => {
-    const response = await CommentService.getUserComments(userId);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/comments/user/${userId}`);
+    if (!response.ok) throw new Error('Failed to fetch user comments');
+    return response.json();
   },
 
   createComment: async (comment: { content: string; postId: string }, token: string): Promise<Comment> => {
-    return CommentService.createComment(comment);
+    const response = await fetch(`${API_BASE_URL}/comments`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify(comment),
+    });
+    if (!response.ok) throw new Error('Failed to create comment');
+    return response.json();
   },
 
   updateComment: async (id: string, content: string, token: string): Promise<Comment> => {
-    return CommentService.updateComment(id, { content });
+    const response = await fetch(`${API_BASE_URL}/comments/${id}`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify({ content }),
+    });
+    if (!response.ok) throw new Error('Failed to update comment');
+    return response.json();
   },
 
   deleteComment: async (id: string, token: string): Promise<void> => {
-    return CommentService.deleteComment(id);
+    const response = await fetch(`${API_BASE_URL}/comments/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Failed to delete comment');
   },
 
   voteComment: async (id: string, voteType: 'up' | 'down', token: string): Promise<Comment> => {
-    return CommentService.voteComment(id, voteType);
+    const response = await fetch(`${API_BASE_URL}/comments/${id}/vote`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify({ voteType }),
+    });
+    if (!response.ok) throw new Error('Failed to vote comment');
+    return response.json();
   },
 };
 
 // Users API functions
 export const usersAPI = {
   getUserById: async (userId: string): Promise<User> => {
-    return UserService.getUserById(userId);
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`);
+    if (!response.ok) throw new Error('Failed to fetch user');
+    return response.json();
   },
 
   updateAvatar: async (formData: FormData, token: string): Promise<User> => {
-    const avatarFile = formData.get('avatar') as File;
-    return UserService.updateAvatar(avatarFile);
+    const response = await fetch(`${API_BASE_URL}/users/profile/avatar`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData,
+    });
+    if (!response.ok) throw new Error('Failed to update avatar');
+    return response.json();
   },
 
   updateProfile: async (profile: { username?: string; bio?: string }, token: string): Promise<User> => {
-    return UserService.updateProfile(profile);
+    const response = await fetch(`${API_BASE_URL}/users/profile`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify(profile),
+    });
+    if (!response.ok) throw new Error('Failed to update profile');
+    return response.json();
   },
 };
 
-// Leaderboard API function
+// Leaderboard API function (assuming it exists)
 export const leaderboardAPI = {
   getLeaderboard: async (): Promise<LeaderboardEntry[]> => {
-    return LeaderboardService.getLeaderboard();
+    const response = await fetch(`${API_BASE_URL}/leaderboard`);
+    if (!response.ok) throw new Error('Failed to fetch leaderboard');
+    return response.json();
   },
 };
 

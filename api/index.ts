@@ -1,15 +1,15 @@
 // Main API exports
-export * from './config';
-export * from './types';
-export * from './utils/httpClient';
-export * from './utils/auth';
+export * from './config.js';
+export * from './types.js';
+export * from './utils/httpClient.js';
+export * from './utils/auth.js';
 
 // Service exports
-export { AuthService } from './services/authService';
-export { UserService } from './services/userService';
-export { PostService } from './services/postService';
-export { CommentService } from './services/commentService';
-export { LeaderboardService } from './services/leaderboardService';
+export { AuthService } from './services/authService.js';
+export { UserService } from './services/userService.js';
+export { PostService } from './services/postService.js';
+export { CommentService } from './services/commentService.js';
+export { LeaderboardService } from './services/leaderboardService.js';
 
 // Re-export commonly used types for convenience
 export type {
@@ -29,4 +29,4 @@ export type {
   ApiResponse,
   PaginatedResponse,
   ApiError,
-} from './types';
+} from './types.js';

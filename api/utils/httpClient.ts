@@ -1,6 +1,6 @@
-import { API_CONFIG, CONTENT_TYPES } from '../config';
+import { API_CONFIG, CONTENT_TYPES } from '../config.js';
 import { ENV_CONFIG } from '../../src/config/env';
-import { ApiError, ApiResponse } from '../types';
+import { ApiError, ApiResponse } from '../types.js';
 
 class HttpClient {
   private baseURL: string;

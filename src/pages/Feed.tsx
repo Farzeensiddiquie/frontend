@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { PostCard } from "@/components/ui/post-card";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,34 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, TrendingUp, MessageSquare } from "lucide-react";
 import { postsAPI } from "@/lib/api";
-import { toast } from "sonner";
 
 const Feed = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [localSearch, setLocalSearch] = useState(searchQuery);
-  const queryClient = useQueryClient();
 
   const { data: postsData, isLoading, error } = useQuery({
     queryKey: ['posts', currentPage, searchQuery],
     queryFn: () => postsAPI.getAllPosts(currentPage, searchQuery),
   });
-
-  const voteMutation = useMutation({
-    mutationFn: ({ postId, voteType }: { postId: string; voteType: 'up' | 'down' }) => 
-      postsAPI.votePost(postId, voteType, ''),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-    },
-    onError: () => {
-      toast.error("Failed to vote. Please try again.");
-    },
-  });
-
-  const handleVote = (postId: string, voteType: 'up' | 'down') => {
-    voteMutation.mutate({ postId, voteType });
-  };
 
   useEffect(() => {
     const search = searchParams.get('search');
@@ -161,11 +144,7 @@ const Feed = () => {
           <div className="space-y-6">
             {posts.map((post, index) => (
               <div key={post.id} className="animate-slide-up" style={{ animationDelay: `${index * 50}ms` }}>
-                <PostCard 
-                  post={post} 
-                  onVote={handleVote}
-                  userVote={null} // You can implement user vote tracking later
-                />
+                <PostCard post={post} />
               </div>
             ))}
           </div>

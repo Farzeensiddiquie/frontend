@@ -54,29 +54,6 @@ const PostDetail = ({ user, token }: PostDetailProps) => {
     },
   });
 
-  const votePostMutation = useMutation({
-    mutationFn: (voteType: 'up' | 'down') => postsAPI.votePost(id!, voteType, token!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['post', id] });
-      toast.success("Vote recorded!");
-    },
-    onError: () => {
-      toast.error("Failed to vote. Please try again.");
-    },
-  });
-
-  const voteCommentMutation = useMutation({
-    mutationFn: ({ commentId, voteType }: { commentId: string; voteType: 'up' | 'down' }) => 
-      commentsAPI.voteComment(commentId, voteType, token!),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['comments', id] });
-      toast.success("Vote recorded!");
-    },
-    onError: () => {
-      toast.error("Failed to vote. Please try again.");
-    },
-  });
-
   const handleAddComment = async () => {
     if (!newComment.trim() || !user || !token) return;
     
@@ -155,18 +132,7 @@ const PostDetail = ({ user, token }: PostDetailProps) => {
 
       {/* Post Content */}
       <div className="mb-8">
-        <PostCard 
-          post={post} 
-          showFullContent 
-          onVote={(postId, voteType) => {
-            if (user && token) {
-              votePostMutation.mutate(voteType);
-            } else {
-              toast.error("Please sign in to vote");
-            }
-          }}
-          userVote={null} // You can implement user vote tracking later
-        />
+        <PostCard post={post} showFullContent />
         
         {/* Action Buttons */}
         <div className="flex items-center gap-3 mt-6">
@@ -286,7 +252,8 @@ const PostDetail = ({ user, token }: PostDetailProps) => {
                       votes={comment.votes}
                       onVote={(voteType) => {
                         if (user && token) {
-                          voteCommentMutation.mutate({ commentId: comment.id, voteType });
+                          // Handle comment voting
+                          toast.info("Comment voting coming soon!");
                         } else {
                           toast.error("Please sign in to vote");
                         }

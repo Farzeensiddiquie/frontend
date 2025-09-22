@@ -1,6 +1,6 @@
-import { httpClient } from '../utils/httpClient';
-import { AuthUtils } from '../utils/auth';
-import { API_ENDPOINTS } from '../config';
+import { httpClient } from '../utils/httpClient.js';
+import { AuthUtils } from '../utils/auth.js';
+import { API_ENDPOINTS } from '../config.js';
 import { 
   Comment, 
   CreateCommentData, 
@@ -8,7 +8,7 @@ import {
   CommentFilters, 
   ApiResponse, 
   PaginatedResponse 
-} from '../types';
+} from '../types.js';
 
 export class CommentService {
   // Get comments by post ID
@@ -23,8 +23,14 @@ export class CommentService {
       ? `${API_ENDPOINTS.COMMENTS.BY_POST(postId)}?${queryString}` 
       : API_ENDPOINTS.COMMENTS.BY_POST(postId);
 
-    const response = await httpClient.get<PaginatedResponse<Comment>>(endpoint);
-    return response.data;
+    const response = await httpClient.get<{ success: boolean; data: { comments: Comment[]; pagination: any } }>(endpoint);
+    return {
+      data: response.data.data.comments,
+      total: response.data.data.pagination.totalComments,
+      page: response.data.data.pagination.currentPage,
+      limit: 10,
+      totalPages: response.data.data.pagination.totalPages
+    };
   }
 
   // Get comments by user ID
@@ -33,30 +39,36 @@ export class CommentService {
       page: page.toString(),
     });
 
-    const response = await httpClient.get<PaginatedResponse<Comment>>(
+    const response = await httpClient.get<{ success: boolean; data: { comments: Comment[]; pagination: any } }>(
       `${API_ENDPOINTS.COMMENTS.BY_USER(userId)}?${params}`
     );
-    return response.data;
+    return {
+      data: response.data.data.comments,
+      total: response.data.data.pagination.totalComments,
+      page: response.data.data.pagination.currentPage,
+      limit: 10,
+      totalPages: response.data.data.pagination.totalPages
+    };
   }
 
   // Create new comment
   static async createComment(commentData: CreateCommentData): Promise<Comment> {
-    const response = await httpClient.post<Comment>(
+    const response = await httpClient.post<{ success: boolean; data: Comment }>(
       API_ENDPOINTS.COMMENTS.ALL,
       commentData,
       AuthUtils.getAuthHeaders()
     );
-    return response.data;
+    return response.data.data;
   }
 
   // Update comment
   static async updateComment(commentId: string, commentData: UpdateCommentData): Promise<Comment> {
-    const response = await httpClient.put<Comment>(
+    const response = await httpClient.put<{ success: boolean; data: Comment }>(
       API_ENDPOINTS.COMMENTS.BY_ID(commentId),
       commentData,
       AuthUtils.getAuthHeaders()
     );
-    return response.data;
+    return response.data.data;
   }
 
   // Delete comment
@@ -69,20 +81,20 @@ export class CommentService {
 
   // Vote on comment
   static async voteComment(commentId: string, voteType: 'up' | 'down'): Promise<Comment> {
-    const response = await httpClient.post<Comment>(
+    const response = await httpClient.post<{ success: boolean; data: Comment }>(
       API_ENDPOINTS.COMMENTS.VOTE(commentId),
       { voteType },
       AuthUtils.getAuthHeaders()
     );
-    return response.data;
+    return response.data.data;
   }
 
   // Get comment by ID
   static async getCommentById(commentId: string): Promise<Comment> {
-    const response = await httpClient.get<Comment>(
+    const response = await httpClient.get<{ success: boolean; data: Comment }>(
       API_ENDPOINTS.COMMENTS.BY_ID(commentId)
     );
-    return response.data;
+    return response.data.data;
   }
 
   // Get recent comments
